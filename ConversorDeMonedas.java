@@ -1,3 +1,4 @@
+import java.util.Scanner;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -5,14 +6,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import com.google.gson.*;
 
-public class ConversorDeMonedas {
-
+public class Main {
     private static final String API_URL = "https://v6.exchangerate-api.com/v6/1c982f75eb58662e366c742b/latest/USD";
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final Gson gson = new Gson();
 
     public static void main(String[] args) {
-        mostrarMenu();
+        mostrarMenu(); //
     }
 
     public static void mostrarMenu() {
@@ -29,26 +29,29 @@ public class ConversorDeMonedas {
 
         Scanner scanner = new Scanner(System.in);
         int opcion = scanner.nextInt();
-        scanner.nextLine(); // Limpiar el buffer de entrada
+        scanner.nextLine();
+        System.out.println("Introduzca la cantidad a converter: ");
+        double cantidad = scanner.nextInt();
+
 
         switch (opcion) {
             case 1:
-                convertirMoneda("USD", "ARS");
+                convertirMoneda(cantidad,"USD", "ARS");
                 break;
             case 2:
-                convertirMoneda("USD", "BRL");
+                convertirMoneda(cantidad,"USD", "BRL");
                 break;
             case 3:
-                convertirMoneda("USD", "COP");
+                convertirMoneda(cantidad,"USD", "COP");
                 break;
             case 4:
-                convertirMoneda("ARS", "USD");
+                convertirMoneda(cantidad,"ARS", "USD");
                 break;
             case 5:
-                convertirMoneda("BRL", "USD");
+                convertirMoneda(cantidad,"BRL", "USD");
                 break;
             case 6:
-                convertirMoneda("COP", "USD");
+                convertirMoneda(cantidad,"COP", "USD");
                 break;
             case 7:
                 System.out.println("Saliendo del Conversor de Moneda. ¡Hasta luego!");
@@ -60,7 +63,7 @@ public class ConversorDeMonedas {
         }
     }
 
-    public static void convertirMoneda(String monedaOrigen, String monedaDestino) {
+    public static void convertirMoneda(double cantidad, String monedaOrigen, String monedaDestino) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(API_URL))
@@ -70,12 +73,13 @@ public class ConversorDeMonedas {
 
             JsonObject jsonObject = gson.fromJson(response.body(), JsonObject.class);
 
-            double tasaCambio = jsonObject.getAsJsonObject("conversion_rates").get(monedaDestino).getAsDouble();
-            double cantidad = 1.0; // Puedes cambiar esta cantidad según tus necesidades
+            double tasaCambioDestino = jsonObject.getAsJsonObject("conversion_rates").get(monedaDestino).getAsDouble();
+            double tasaCambioOrigen = jsonObject.getAsJsonObject("conversion_rates").get(monedaOrigen).getAsDouble();
 
-            double resultado = cantidad * tasaCambio;
+            double resultado = (cantidad * tasaCambioDestino)/ tasaCambioOrigen;
+            String resultadoFormateado = String.format("%.3f", resultado);
 
-            System.out.println(cantidad + " " + monedaOrigen + " equivale a " + resultado + " " + monedaDestino);
+            System.out.println(cantidad + " " + monedaOrigen + " equivale a " + resultadoFormateado + " " + monedaDestino);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
